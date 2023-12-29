@@ -1,11 +1,13 @@
 use super::config::{OWNER, REPO};
 use std::sync::Arc;
+use dotenv::dotenv;
 
 use octocrab::{map_github_error, Octocrab, OctocrabBuilder};
 use reqwest::Response;
 use serde_json::json;
 
 pub fn init() -> anyhow::Result<Arc<Octocrab>> {
+    dotenv().ok();
     let pat_token = std::env::var("GITHUB_TOKEN")
         .map_err(|_| anyhow::anyhow!("You must specify the GitHub token in envvar GITHUB_TOKEN to change the repo information."))?;
 
@@ -26,8 +28,8 @@ pub async fn get_stars() -> octocrab::Result<u32> {
 /// Reference: <https://docs.github.com/en/rest/repos/repos#update-a-repository>
 pub async fn update_to_stars(stars: u32) -> octocrab::Result<Response> {
     let payload = json!({
-        "name": format!("This-repo-has-{stars}-stars"),
-        "description": format!("没有错！这个仓库有{stars}个star！哈哈哈哈！"),
+        "name": format!("this-repo-has-{stars}-stars"),
+        "description": format!("这个仓库有{stars}颗星星！哈哈哈哈！Yeeeah! This repo has {stars} stars!"),
     });
 
     tracing::debug!("{payload:?}");
