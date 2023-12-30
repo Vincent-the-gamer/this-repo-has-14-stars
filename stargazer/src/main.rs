@@ -22,7 +22,7 @@ async fn main() -> std::io::Result<()> {
    } else if args.len() > 1 {
        port = (&args[1]).parse::<u16>().unwrap();
    } else {
-       panic!("命令行参数获取错误");
+       panic!("arguments error!");
    }
 
    println!("App running at http://{}:{}", host, port);
@@ -30,7 +30,7 @@ async fn main() -> std::io::Result<()> {
    HttpServer::new(move || {
        App::new()
        .service(webhook::update_star)
-       // actix-web解决跨域
+       // actix-web cors config
        .wrap(Cors::default()
             .allow_any_header()
             .allow_any_origin()
