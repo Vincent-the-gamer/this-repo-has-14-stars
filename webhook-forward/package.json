@@ -1,0 +1,17 @@
+{
+  "name": "webhook-forward",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "esno smee-client.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "esno": "^4.0.0"
+  },
+  "dependencies": {
+    "smee-client": "^2.0.0"
+  }
+}

@@ -1,38 +1,43 @@
+mod webhook;
 mod config;
 mod octocrab;
 
-use config::REFRESH_INTERVAL;
+use std::env;
+
+use actix_cors::Cors;
+use actix_web::{App, HttpServer};
 
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
-    tracing_subscriber::fmt::init();
-    octocrab::init()?;
+async fn main() -> std::io::Result<()> {
+   // init tracing_subscriber and octocrab
+   tracing_subscriber::fmt::init();
+   octocrab::init().unwrap();
 
-    let mut previous_star = None::<u32>;
+   let args: Vec<String> = env::args().collect();
+   let host = "0.0.0.0";
+   let port: u16;
+   // default 8080
+   if args.len() == 1 {
+       port = 8080;
+   } else if args.len() > 1 {
+       port = (&args[1]).parse::<u16>().unwrap();
+   } else {
+       panic!("命令行参数获取错误");
+   }
 
-    #[cfg(debug_assertions)]
-    {
-        tracing::debug!("Getting the token scope…");
-        tracing::debug!("Token scope: {:?}", octocrab::get_token_scope().await?);
-    }
+   println!("App running at http://{}:{}", host, port);
 
-    // FIXME: change to webhook instead of polling for better performance.
-    loop {
-        tracing::debug!("Getting the stars…");
-        let stars = octocrab::get_stars().await?;
-        tracing::info!("This repo has {stars} stars currently.");
-
-        if Some(stars) != previous_star {
-            tracing::debug!("Updating the repo information…");
-            octocrab::update_to_stars(stars).await?;
-            tracing::info!("Successfully updated the stars of this repo to {stars}.");
-        } else {
-            tracing::debug!("Stars didn't change. Ignoring.");
-        }
-
-        previous_star = Some(stars);
-
-        tracing::debug!("Wait for {REFRESH_INTERVAL} seconds before next update.");
-        tokio::time::sleep(std::time::Duration::from_secs(REFRESH_INTERVAL)).await;
-    }
+   HttpServer::new(move || {
+       App::new()
+       .service(webhook::update_star)
+       // actix-web解决跨域
+       .wrap(Cors::default()
+            .allow_any_header()
+            .allow_any_origin()
+            .allow_any_method()
+       )  
+   })
+       .bind((host, port))?
+       .run()
+       .await
 }

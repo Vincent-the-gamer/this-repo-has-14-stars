@@ -5,6 +5,8 @@ edition = "2021"
 
 
 [dependencies]
+actix-cors = "0.6.5"
+actix-web = "4.4.1"
 anyhow = "1.0.77"
 dotenv = "0.15.0"
 octocrab = "0.16.0"
